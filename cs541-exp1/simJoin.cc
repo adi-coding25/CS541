@@ -35,6 +35,26 @@ bool simJoin::readData(const string &filename)
  * an error if the similarity join operation is failed.
  */
 
+void simJoin::processPartitions(tuple<unsigned, unsigned> i, unsigned threshold)
+{
+  int indr = get<0>(i), inds = get<1>(i);
+  string r = data[indr], s = data[inds];
+
+  tuple<vector<string>, vector<unsigned>> rPartsRes = rpartition(r,threshold);
+  vector<string> rParts = get<0>(rPartsRes);
+  vector<unsigned> rIndices = get<1>(rPartsRes);
+  unsigned delta = abs((int)s.length() - (int)r.length());
+  for (int i=0; i<rParts.size(); i++)
+  {
+    bool isPair = spartition(s, rParts[i], threshold, rIndices[i], i+1, delta);
+    if(isPair)
+    {
+      partFilteredData.push_back(make_tuple(indr, inds));
+      break;
+    }
+  }
+}
+
 
 bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsigned, unsigned> > &results) 
 {
@@ -43,7 +63,7 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
   
   cout << "Filtered Data Length after L Filter " << filteredData.size() << endl;
 
-  for( auto i: filteredData)
+  /*for( auto i: filteredData)
   {
     
     int indr = get<0>(i), inds = get<1>(i);
@@ -63,7 +83,7 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
       }
     }
 
-  }
+  }*/
   
   cout << "Filtered Data Length after P Filter " << partFilteredData.size() << endl;
 
@@ -92,9 +112,8 @@ bool simJoin::lengthFilter(unsigned threshold)
   cout << size;
   for (int i=0; i<size; i++){
     for(int j=i+1; j<size && data[j].size() - data[i].size() <= threshold ; j++){
-      if(data[j].size() - data[i].size() <= threshold){
-        filteredData.push_back(make_tuple(i,j));
-      }
+        //filteredData.push_back(make_tuple(i,j));
+        processPartitions(make_tuple(i,j), threshold);
     }
   }
 
