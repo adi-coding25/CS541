@@ -32,10 +32,11 @@ public:
   
 private:
   vector<string> data;
-  vector< tuple<unsigned, unsigned> > filteredData, partFilteredData;
+  vector< tuple<unsigned, unsigned>> filteredData, partFilteredData;
   bool readData(const string &filename);
   bool lengthFilter(unsigned ed_threshold);
   tuple<vector<string>, vector<unsigned>> rpartition(string s, unsigned tau);
   bool spartition(std::string s, std::string sub, int t, int start, int i, int delta);
   int minDistance(std::string str1, std::string str2);
+  void processPartitions(tuple<unsigned, unsigned> i, unsigned threshold);
 };
