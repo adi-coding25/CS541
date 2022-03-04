@@ -16,15 +16,15 @@ struct triple
   T3 ed;
 };
 
-class simJoin 
+class simJoin
 {
 public:
-	simJoin(const string &filename) 
+    simJoin(const string &filename)
   {
     readData(filename);
   };
 
-	~simJoin  () {};
+    ~simJoin  () {};
 
   bool SimilarityJoin(unsigned ed_threshold, vector< triple<unsigned, unsigned, unsigned> > &results);
   bool getString(int id, string &out) const;
@@ -37,6 +37,6 @@ private:
   bool lengthFilter(unsigned ed_threshold);
   tuple<vector<string>, vector<unsigned>> rpartition(string s, unsigned tau);
   bool spartition(std::string s, std::string sub, int t, int start, int i, int delta);
-  int minDistance(std::string str1, std::string str2);
+  int minDistance(std::string str1, std::string str2, int t);
   void processPartitions(tuple<unsigned, unsigned> i, unsigned threshold);
 };

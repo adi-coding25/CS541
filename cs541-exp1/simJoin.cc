@@ -1,4 +1,5 @@
 #include "simJoin.h"
+#include "string.h"
 #include <cmath>
 #include <tuple>
 using namespace std;
@@ -28,10 +29,10 @@ bool simJoin::readData(const string &filename)
 
  /*
  * It should do a similarity join operation betweent the set of strings from a data file
- * such that the edit distance between two string is not larger than the given threshold. The 
+ * such that the edit distance between two string is not larger than the given threshold. The
  * format of result is a triple of numbers which respectively stand for the two IDs of the pair of strings
  * from the data file and the edit distance between the two strings. All results are stored in a vector, sorted based on the IDs of the string from
- * the first file and then the IDs of the string from the second file in an ascending order. Return 
+ * the first file and then the IDs of the string from the second file in an ascending order. Return
  * an error if the similarity join operation is failed.
  */
 
@@ -56,7 +57,7 @@ void simJoin::processPartitions(tuple<unsigned, unsigned> i, unsigned threshold)
 }
 
 
-bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsigned, unsigned> > &results) 
+bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsigned, unsigned> > &results)
 {
   
   lengthFilter(threshold);
@@ -86,15 +87,14 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
   }*/
   
   cout << "Filtered Data Length after P Filter " << partFilteredData.size() << endl;
-
   for( auto i: partFilteredData)
   {
     
     int indr = get<0>(i), inds = get<1>(i);
     string r = data[indr], s = data[inds];
     
-    int editDist = minDistance(r, s);
-
+    int editDist = minDistance(r, s, threshold);
+      //cout << editDist << " " << r << " " << s << " " << endl;
     if(editDist <= threshold)
     {
       triple<unsigned, unsigned, unsigned> triples = {(unsigned)indr, (unsigned)inds, (unsigned)editDist};
@@ -103,7 +103,7 @@ bool simJoin::SimilarityJoin(unsigned threshold, vector< triple<unsigned, unsign
      
   }
 
-	return true;
+    return true;
 }
 
 bool simJoin::lengthFilter(unsigned threshold)
@@ -139,7 +139,7 @@ tuple<vector<string>, vector<unsigned>> simJoin::rpartition(string r, unsigned t
   vector<unsigned> indices;
   int i;
   for ( i=0; i<fParts; i++){
-    unsigned startInd = i*fSize;    
+    unsigned startInd = i*fSize;
     res.emplace_back(r.substr(startInd, fSize));
     indices.emplace_back(startInd);
   }
@@ -147,7 +147,7 @@ tuple<vector<string>, vector<unsigned>> simJoin::rpartition(string r, unsigned t
   unsigned totSize = i*fSize;
 
   for (i=0; i<sParts; i++){
-    unsigned startInd = totSize + i*sSize;    
+    unsigned startInd = totSize + i*sSize;
     res.emplace_back(r.substr(startInd, sSize));
     indices.emplace_back(startInd);
   }
@@ -155,8 +155,8 @@ tuple<vector<string>, vector<unsigned>> simJoin::rpartition(string r, unsigned t
   return make_tuple(res, indices);
 }
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @param s -- String "s" of the candidate pair
  * @param sub --> substring from string r to compare
  * @param t --> threshold
@@ -176,7 +176,60 @@ bool simJoin::spartition(string s, string sub, int t, int start, int i, int delt
     return nstart+pos >= nstart && nstart+pos <=nend;
 }
 
-int simJoin::minDistance(std::string word1, std::string word2)
+inline int simJoin::minDistance(std::string word1, std::string word2, int t){
+        int w1r = (int)word1.length();
+        int w2s = (int)word2.length();
+        int d = abs(w1r-w2s);
+        if(d>t){
+            return t+1;
+        }
+        
+        //vector<vector<int>> M(w1r + 1, vector<int>(w2s + 1, 0));
+        //vector<vector<int>> E(w1r + 1, vector<int>(w2s + 1, 0));
+        int M[w1r+2][w2s+2];
+        memset( M, 0, (w1r+2)*(w2s+2)*sizeof(int) );
+        int E[w1r+2][w2s+2];
+        memset( E, 0, (w1r+2)*(w2s+2)*sizeof(int) );
+        int st,en;
+        for(int i=0;i<=w1r;i++){
+            M[i][0]=i;
+            E[i][0]=i;
+        }
+        for(int i=0;i<=w2s;i++){
+            M[0][i]=i;
+            E[0][i]=i;
+        }
+        
+        
+        for(int i=1; i<=w1r; i++){
+            st = i-((t-d)/2);
+            en = i+((t+d)/2);
+            for(int j=st; j<=en; j++){
+                int del = 0;
+                int ins = t+t;
+                if(j>st) ins = M[i][j-1]+1;
+                int delop = t+t;
+                if(j<en) delop = M[i-1][j]+1;
+                if(word1[i-1]==word2[j-1]) del = 0;
+                else del = 1;
+                int temp = std::min(ins, delop);
+                M[i][j] = std::min(temp, M[i-1][j-1]+del);
+                E[i][j] = M[i][j]+abs((w2s-j)-(w1r-i));
+            }
+            int count = 0;
+            for(int j=st;j<=en;j++){
+                if(E[i][j]>t){
+                    count++;
+                }
+            }
+            if(count>=abs(en-st)+1){
+                return t+1;
+            }
+        }
+        return M[w1r][w2s];
+}
+
+/*int simJoin::minDistance(std::string word1, std::string word2)
 {
   //cout << "IN EDIT DIST" << endl;
   
@@ -201,3 +254,4 @@ int simJoin::minDistance(std::string word1, std::string word2)
   return dp[m][n];
     
 }
+*/

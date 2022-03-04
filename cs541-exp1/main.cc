@@ -28,7 +28,7 @@ int main (int argc, char ** argv)
 
   cout << "Reading data begin " << endl;
 
-  string filename = "/Users/aditya/Downloads/cs541-exp1/author-small.txt";
+  string filename = "/Users/aditya/Downloads/cs541-exp1/author10000.txt";
 
   gettimeofday(&t1, NULL);
   simJoin joiner(filename);
@@ -39,7 +39,7 @@ int main (int argc, char ** argv)
   string message1 = "IO Time: ";
   logTimeMessage(t1, t2, message1);
 
-  unsigned edtau = 3;
+  unsigned edtau = 1;
   joiner.SimilarityJoin(edtau, results);
   gettimeofday(&t3, NULL);
 
@@ -61,9 +61,9 @@ int main (int argc, char ** argv)
 
     unsigned ed = results[i].ed;
 
-    cerr << firstId << " " << secondId << " " << ed << endl;
-    cerr << "# " << firstStr << endl;
-    cerr << "# " << secondStr << endl;
+    //cerr << firstId << " " << secondId << " " << ed << endl;
+   // cerr << "# " << firstStr << endl;
+   // cerr << "# " << secondStr << endl;
   }
 
   return 0;
